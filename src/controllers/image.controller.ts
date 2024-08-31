@@ -7,7 +7,11 @@ export const uploadCsvAndStartProcessing = async (
 ) => {
   try {
     const sheetData = req.sheetData;
-    const result = await imageService.uploadCsvAndStartProcessing(sheetData);
+    const { webhook_url = null } = req.body;
+    const result = await imageService.uploadCsvAndStartProcessing(
+      sheetData,
+      webhook_url
+    );
     res.json(result);
   } catch (error) {
     console.error(error);

@@ -71,7 +71,8 @@ export const validateExcelAndConvertTOJSON = async (req, res, next) => {
   }
 };
 
-const isValidUrl = (url) => {
+//Todo: Only pass validation of these format: png, jpeg, jpg, webp, avif
+const isValidUrl = (url: string) => {
   try {
     new URL(url);
     return true;

@@ -17,7 +17,12 @@ class CompressionService {
       async (job: Job) => {
         console.log("Processing job:", job.id, job.data);
 
-        await this.processImage(job.data.image, job.data.request_id);
+        await this.processImage(
+          job.data.image,
+          job.data.request_id,
+          job.data.product_id,
+          job.data.image_id
+        );
 
         return "Images processed successfully";
       },
@@ -41,32 +46,39 @@ class CompressionService {
     });
   }
 
-  private async processImage(image: string, request_id: number): Promise<void> {
+  private async processImage(
+    image: string,
+    request_id: number,
+    product_id: number,
+    image_id: number
+  ): Promise<void> {
     console.log("Processing image:", image);
     let imageBuffer = (await axios({ url: image, responseType: "arraybuffer" }))
       .data as Buffer;
 
     const _image = sharp(imageBuffer);
+    // .toFormat("webp");
     const meta = await _image.metadata();
     const { format } = meta;
 
     console.log({ format });
 
     const config = {
-      jpeg: { quality: 10 },
-      webp: { quality: 10 },
-      png: { compressionLevel: 1 },
+      jpeg: { quality: 50 },
+      webp: { quality: 50 },
+      avif: { quality: 50 },
+      png: { compressionLevel: 5, quality: 50, force: true },
     };
 
-    const processedImageBuffer = await _image[format](config[format])
-      .resize(1000)
-      .toBuffer();
+    const processedImageBuffer = await _image[format](
+      config[format] || { quality: 50 }
+    ).toBuffer();
 
     const fileName = path.basename(image);
 
     const params = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: request_id + "-" + fileName,
+      Key: request_id + "/" + product_id + "/" + image_id + "-" + fileName,
       Body: processedImageBuffer,
       ContentType: `image/${format}`,
     };
@@ -74,13 +86,19 @@ class CompressionService {
     const uploadResponse = await this.s3.upload(params).promise();
     const output_image = uploadResponse.Location;
     console.log("Image uploaded successfully to S3", output_image);
-    const processedSize = processedImageBuffer.length;
     console.log(
-      "before",
+      "before size",
       imageBuffer.length,
-      "after",
-      processedImageBuffer.length
+      "after compression size",
+      processedImageBuffer.length,
+      "compressed percentage",
+      Math.floor((1 - processedImageBuffer.length / imageBuffer.length) * 100)
     );
+
+    await prisma.image_product_mapping.update({
+      data: { output_url: output_image },
+      where: { id: image_id },
+    });
 
     await new Promise((resolve) => setTimeout(resolve, 10000));
     console.log("Image processed:", image);

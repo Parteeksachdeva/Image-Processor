@@ -21,7 +21,6 @@ enum Status {
 model product_master {
   product_id  Int                     @id @default(autoincrement())
   product_sku String                  @unique
-  webhook_url String?
   request_id  Int
   images      image_product_mapping[]
 
@@ -40,6 +39,7 @@ model image_product_mapping {
 model compress_request_status {
   request_id Int    @id @default(autoincrement())
   file_name  String
+  webhook_url String?
   status     Status @default(PENDING)
 
   product_master product_master[]
