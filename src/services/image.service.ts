@@ -3,9 +3,52 @@ import xlsx from "xlsx";
 import { prisma } from "../data-source";
 
 class ImageService {
-  //   private contactRepository: Repository<Contact>;
-  constructor() {
-    // this.contactRepository = AppDataSource.getRepository(Contact);
+  constructor() {}
+
+  private async bulkUpload(
+    products: { product_sku: string }[],
+    imageMap: Map<string, string>
+  ) {
+    try {
+      const insertedProducts = await prisma.$transaction(async (tx) => {
+        const requestData = await tx.compress_request_status.create({
+          data: { file_name: "Sheet 1" },
+        });
+
+        const request_id = requestData.request_id;
+
+        const productInsertions = await tx.product_master.createManyAndReturn({
+          data: products.map((p) => ({ ...p, request_id })),
+          skipDuplicates: true,
+        });
+
+        const imagesData = [];
+
+        productInsertions.forEach((c) => {
+          const _images = imageMap.get(c.product_sku).split(",");
+          _images.forEach((image_url) => {
+            imagesData.push({
+              product_id: c.product_id,
+              image_url,
+            });
+          });
+        });
+
+        await tx.image_product_mapping.createMany({
+          data: imagesData,
+        });
+
+        return { productInsertions, request_id };
+      });
+
+      console.log(
+        `Bulk upload completed successfully. ${insertedProducts.productInsertions.length} products inserted.`
+      );
+
+      return insertedProducts.request_id;
+    } catch (error) {
+      console.error("Error during bulk upload:", error);
+    }
   }
 
   /**
@@ -16,33 +59,17 @@ class ImageService {
    */
   public async uploadCsvAndStartProcessing(sheetData) {
     try {
-      console.log(sheetData);
-      // console.log({ sheetData });
+      const products = [];
+      const imageMap = new Map();
+      for (const row of sheetData) {
+        products.push({ product_sku: row.productName });
+        imageMap.set(row.productName, row.inputImageUrls);
+      }
 
-      //Write data with transaction
-      //   const product = await prisma.product_master.create({
-      //     data: {
-      //       product_sku: "1234567",
-      //       webhook_url: "123",
-      //       images: {
-      //         create: [
-      //           { image_url: "https://example.com/image1.jpg" },
-      //           { image_url: "https://example.com/image2.jpg" },
-      //         ],
-      //       },
-      //       request_status: {
-      //         create: {
-      //           status: "pending",
-      //         },
-      //       },
-      //     },
-      //   });
+      //Todo: Add batch processing
+      const request_id = await this.bulkUpload(products, imageMap);
 
-      const a = await prisma.product_master.findMany();
-      const b = await prisma.image_product_mapping.findMany();
-      const c = await prisma.request_status.findMany();
-
-      return { a, b, c };
+      return { request_id };
     } catch (error) {
       console.error(error);
     }

@@ -13,13 +13,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  PENDING
+  COMPLETED
+}
 
 model product_master {
-  product_id Int    @id @default(autoincrement())
-  product_sku String @unique
-  webhook_url String 
-  images image_product_mapping[]
-  request_status request_status[]
+  product_id  Int                     @id @default(autoincrement())
+  product_sku String                  @unique
+  webhook_url String?
+  request_id  Int
+  images      image_product_mapping[]
+
+  compress_status compress_request_status @relation(fields: [request_id], references: [request_id])
 }
 
 model image_product_mapping {
@@ -31,10 +37,10 @@ model image_product_mapping {
   product product_master @relation(fields: [product_id], references: [product_id])
 }
 
-model request_status {
-  request_id Int     @id @default(autoincrement())
-  product_id Int
-  status     String
+model compress_request_status {
+  request_id Int    @id @default(autoincrement())
+  file_name  String
+  status     Status @default(PENDING)
 
-  product product_master @relation(fields: [product_id], references: [product_id])
+  product_master product_master[]
 }

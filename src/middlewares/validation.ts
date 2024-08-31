@@ -7,6 +7,7 @@ interface ExcelRow {
   "Input Image Urls": string;
 }
 
+//Todo: Give exact row number to user which is causing validation error
 export const validateExcelAndConvertTOJSON = async (req, res, next) => {
   const buffer = req.file.buffer;
 
@@ -20,6 +21,7 @@ export const validateExcelAndConvertTOJSON = async (req, res, next) => {
     const sheetData: ExcelRow[] = xlsx.utils.sheet_to_json(
       workbook.Sheets[sheetName]
     );
+    const newSheetData = [];
 
     for (const row of sheetData) {
       const {
@@ -57,9 +59,11 @@ export const validateExcelAndConvertTOJSON = async (req, res, next) => {
             .json({ error: `Unable to access URL: ${url}` });
         }
       }
+
+      newSheetData.push({ serialNumber, productName, inputImageUrls });
     }
 
-    req.sheetData = sheetData;
+    req.sheetData = newSheetData;
     delete req.file;
     next();
   } catch (error) {
