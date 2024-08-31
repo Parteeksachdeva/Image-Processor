@@ -19,10 +19,16 @@
   },
   "homepage": "https://github.com/Parteeksachdeva/Image-Processor#readme",
   "dependencies": {
-    "@types/node": "^22.5.1",
+    "@prisma/client": "^5.19.0",
     "body-parser": "^1.20.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.1",
+    "prisma": "^5.19.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }

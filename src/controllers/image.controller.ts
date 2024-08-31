@@ -6,9 +6,11 @@ export const uploadCsvAndStartProcessing = async (
   res: Response
 ) => {
   try {
-    const result = await imageService.uploadCsvAndStartProcessing();
+    const buffer = req.file.buffer;
+    const result = await imageService.uploadCsvAndStartProcessing(buffer);
     res.json(result);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

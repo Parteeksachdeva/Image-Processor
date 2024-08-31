@@ -1,4 +1,5 @@
 import app from "./app";
+import { prisma } from "./data-source";
 
 const PORT = process.env.PORT || 3000;
 
