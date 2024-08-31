@@ -1,9 +1,13 @@
-import xlsx from "xlsx";
+import { Queue } from "bullmq";
 
 import { prisma } from "../data-source";
+import redisClient from "../redisConfig";
 
 class ImageService {
-  constructor() {}
+  private imageQueue: Queue<any>;
+  constructor() {
+    this.imageQueue = new Queue("imageQueue", { connection: redisClient });
+  }
 
   private async bulkUpload(
     products: { product_sku: string }[],
@@ -61,13 +65,22 @@ class ImageService {
     try {
       const products = [];
       const imageMap = new Map();
+      const inputImages = [];
       for (const row of sheetData) {
         products.push({ product_sku: row.productName });
         imageMap.set(row.productName, row.inputImageUrls);
+        inputImages.push(...row.inputImageUrls.split(","));
       }
 
       //Todo: Add batch processing
       const request_id = await this.bulkUpload(products, imageMap);
+
+      //dump image data to be processed
+      for (const image of inputImages) {
+        const jobDetails = await this.imageQueue.add("imageQueue", {
+          image,
+        });
+      }
 
       return { request_id };
     } catch (error) {

@@ -1,11 +1,15 @@
-import { createClient } from "redis";
+import Redis from "ioredis";
 
-const redisClient = createClient({
-  url: process.env.REDIS_URL,
+const redisClient = new Redis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
 });
 
 redisClient.on("error", function (err) {
   throw err;
+});
+
+redisClient.on("connect", function () {
+  console.log("Connected to Redis");
 });
 
 export default redisClient;
