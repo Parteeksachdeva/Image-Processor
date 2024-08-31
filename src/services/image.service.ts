@@ -14,13 +14,10 @@ class ImageService {
    * @returns {} - The consolidated contact information.
    * @throws {Error} - Throws an error if the contact identification process fails.
    */
-  public async uploadCsvAndStartProcessing(excelBuffer: Buffer) {
+  public async uploadCsvAndStartProcessing(sheetData) {
     try {
-      const workbook = xlsx.read(excelBuffer, { type: "buffer" });
-      const sheetName = workbook.SheetNames[0]; // Assuming you want the first sheet
-      const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-      console.log({ sheetData });
+      console.log(sheetData);
+      // console.log({ sheetData });
 
       //Write data with transaction
       //   const product = await prisma.product_master.create({

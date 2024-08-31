@@ -6,8 +6,8 @@ export const uploadCsvAndStartProcessing = async (
   res: Response
 ) => {
   try {
-    const buffer = req.file.buffer;
-    const result = await imageService.uploadCsvAndStartProcessing(buffer);
+    const sheetData = req.sheetData;
+    const result = await imageService.uploadCsvAndStartProcessing(sheetData);
     res.json(result);
   } catch (error) {
     console.error(error);
