@@ -77,8 +77,9 @@ class ImageService {
 
       //dump image data to be processed
       for (const image of inputImages) {
-        const jobDetails = await this.imageQueue.add("imageQueue", {
+        await this.imageQueue.add("imageQueue", {
           image,
+          request_id,
         });
       }
 
