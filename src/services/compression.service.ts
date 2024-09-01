@@ -100,7 +100,6 @@ class CompressionService {
       where: { id: image_id },
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 10000));
     console.log("Image processed:", image);
   }
 }

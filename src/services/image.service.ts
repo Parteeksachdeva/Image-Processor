@@ -34,6 +34,7 @@ class ImageService {
           _images.forEach((image_url) => {
             _imagesData.push({
               product_id: c.product_id,
+              request_id,
               image_url,
             });
           });
@@ -75,8 +76,8 @@ class ImageService {
       const imageMap = new Map();
       const inputImages = [];
       for (const row of sheetData) {
-        products.push({ product_sku: row.productName + "999" });
-        imageMap.set(row.productName + "999", row.inputImageUrls);
+        products.push({ product_sku: row.productName });
+        imageMap.set(row.productName, row.inputImageUrls);
       }
 
       //Todo: Add batch processing
@@ -105,6 +106,15 @@ class ImageService {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  public async getRequestStatus(request_id: number) {
+    const requestData = await prisma.compress_request_status.findFirst({
+      select: { request_id: true, status: true, webhook_url: true },
+      where: { request_id: request_id },
+    });
+
+    return requestData;
   }
 }
 

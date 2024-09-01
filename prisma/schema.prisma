@@ -30,17 +30,20 @@ model product_master {
 model image_product_mapping {
   id         Int     @id @default(autoincrement())
   product_id Int
+  request_id Int
   image_url  String
   output_url String? // Nullable field to store output image URL after processing
 
-  product product_master @relation(fields: [product_id], references: [product_id])
+  product         product_master          @relation(fields: [product_id], references: [product_id])
+  compress_status compress_request_status @relation(fields: [request_id], references: [request_id])
 }
 
 model compress_request_status {
-  request_id Int    @id @default(autoincrement())
-  file_name  String
+  request_id  Int     @id @default(autoincrement())
+  file_name   String
   webhook_url String?
-  status     Status @default(PENDING)
+  status      Status  @default(PENDING)
 
-  product_master product_master[]
+  product_master        product_master[]
+  image_product_mapping image_product_mapping[]
 }
