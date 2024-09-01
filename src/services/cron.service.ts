@@ -38,7 +38,7 @@ class CronService {
       }
     }
 
-    setTimeout(() => this.changeRequestStatus(), 5000);
+    setTimeout(() => this.changeRequestStatus(), 30000);
   }
 }
 
