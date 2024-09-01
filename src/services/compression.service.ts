@@ -57,7 +57,6 @@ class CompressionService {
       .data as Buffer;
 
     const _image = sharp(imageBuffer);
-    // .toFormat("webp");
     const meta = await _image.metadata();
     const { format } = meta;
 
@@ -86,6 +85,7 @@ class CompressionService {
     const uploadResponse = await this.s3.upload(params).promise();
     const output_image = uploadResponse.Location;
     console.log("Image uploaded successfully to S3", output_image);
+
     console.log(
       "before size",
       imageBuffer.length,
